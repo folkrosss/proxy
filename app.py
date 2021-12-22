@@ -9,6 +9,7 @@ import geoip2.database
 import init
 import sys  
 import widget
+import os
 
 class Scanner(QtWidgets.QMainWindow, widget.Ui_MainWindow):    
 
@@ -20,12 +21,20 @@ class Scanner(QtWidgets.QMainWindow, widget.Ui_MainWindow):
         self.works = 0
         self.toaster = win10toast.ToastNotifier()
         self.toaster.show_toast("Загрузите список прокси для проверки...", duration = 5, threaded = True)
-    
+        self.pushButton.clicked.connect(self.opentxt)
  
 
         self.tray = QSystemTrayIcon(self)
-       
-    
+
+        f = open('http_output.txt', 'w+')
+        f.seek(0)
+        f.close()
+        f = open('https_output.txt', 'w+')
+        f.seek(0)
+        f.close()
+        f = open('socks_output.txt', 'w+')
+        f.seek(0)
+        f.close()
 
 
 
@@ -62,12 +71,15 @@ class Scanner(QtWidgets.QMainWindow, widget.Ui_MainWindow):
         fileMenu.addSeparator()
         
 
-  
+    def opentxt(self):
+        os.system("notepad http_output.txt")
+        os.system("notepad https_output.txt")
+        os.system("notepad socks_output.txt")
                 
     def append(self, background, ipaddress, enaddress, types, sessions, response):   
     
         try: 
-            locat = geoip2.database.Reader("D:/proekt/proxyhunter-main/country/country.mmdb")
+            locat = geoip2.database.Reader("./country/country.mmdb")
             c = locat.country(ipaddress)
             country = c.country.name
             
@@ -110,7 +122,7 @@ class Scanner(QtWidgets.QMainWindow, widget.Ui_MainWindow):
         item = QtWidgets.QTableWidgetItem(response)
         self.tableWidget.setItem(index, 6, item)               
         
- 
+
         if background != 0:
             
             
@@ -120,7 +132,7 @@ class Scanner(QtWidgets.QMainWindow, widget.Ui_MainWindow):
             sitem.setBackground(QtGui.QColor(126, 224, 120))
             sitem.setForeground(QtGui.QColor(255, 255, 255))
            
-            self.writer(ipaddress, enaddress)
+            self.writer(ipaddress, enaddress, types)
 
         else:
 
@@ -131,9 +143,9 @@ class Scanner(QtWidgets.QMainWindow, widget.Ui_MainWindow):
 
         
 
-    def writer(self, ipaddress, enaddress):    
-        with open("e_output.txt", "a") as files:
-            files.write(ipaddress + ":" + enaddress + "\n")    
+    def writer(self, ipaddress, enaddress, types):
+        with open(types.lower() + "_output.txt", "a") as files:
+            files.write(ipaddress + ":" + enaddress + "\n")
             
 
     def start(self):    
@@ -194,5 +206,6 @@ def main():
     window.show()
     app.exec_()
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
+
     main()
